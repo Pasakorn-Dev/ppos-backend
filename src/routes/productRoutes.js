@@ -1,11 +1,19 @@
 const express = require('express');
 const router = express.Router();
 const productController = require('../controllers/productController');
+const verifyToken = require('../middlewares/authMiddleware');
+const checkPermission = require('../middlewares/permissionMiddleware');
 
-// เส้นทางสำหรับสินค้า
-router.get('/', productController.getProducts);       // GET /api/products
-router.post('/', productController.createProduct);   // POST /api/products
-router.put('/:id', productController.updateProduct);     // แก้ไขสินค้าตาม ID
-router.delete('/:id', productController.deleteProduct);  // ลบสินค้าตาม ID
+router.use(verifyToken);
+
+// ตรวจสอบสิทธิ์ตามประเภท action
+router.get('/', productController.getAllProducts);
+router.post('/', checkPermission('/products', 'add'), productController.createProduct);
+router.put('/:id', checkPermission('/products', 'edit'), productController.updateProduct);
+router.delete('/:id', checkPermission('/products', 'delete'), productController.deleteProduct);
+
+// API ราคาสาขา - ตรวจสอบสิทธิ์ด้วย
+router.get('/:id/branch-prices', productController.getProductBranchPrices);
+router.post('/:id/branch-prices', checkPermission('/products', 'edit'), productController.saveProductBranchPrices);
 
 module.exports = router;

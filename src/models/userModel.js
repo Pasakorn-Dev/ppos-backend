@@ -3,7 +3,12 @@ const db = require('../config/db');
 const UserModel = {
     // หาผู้ใช้งานจาก Username (ใช้ตอน Login)
     findByUsername: async (username) => {
-        const query = 'SELECT * FROM public.users WHERE username = $1';
+        const query = `
+            SELECT u.*, b.branch_name
+            FROM public.users u
+            LEFT JOIN public.branches b ON u.branch_id = b.id
+            WHERE u.username = $1
+        `;
         const result = await db.query(query, [username]);
         return result.rows[0];
     },
