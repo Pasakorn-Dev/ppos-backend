@@ -47,10 +47,10 @@ const checkPermission = (menuLink, action) => {
             req.permission = perm;
             
             // Debug log
-            console.log(`=== Permission Check [${menuLink}] ===`);
-            console.log('Action:', action);
-            console.log('Access Level from group_permissions:', accessLevel);
-            console.log('Branch ID:', branchId);
+            // console.log(`=== Permission Check [${menuLink}] ===`);
+            // console.log('Action:', action);
+            // console.log('Access Level from group_permissions:', accessLevel);
+            // console.log('Branch ID:', branchId);
             
             next(); // มีสิทธิ์ -> ให้ผ่านไปทำ API ถัดไปได้
         } catch (error) {

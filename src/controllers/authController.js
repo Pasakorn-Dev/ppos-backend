@@ -56,11 +56,11 @@ const authController = {
             );
 
             // Debug log
-            console.log('=== Login Debug Info ===');
-            console.log('Username:', user.username);
-            console.log('Branch ID:', user.branch_id);
-            console.log('Group ID:', user.group_id);
-            console.log('Note: access_level จะดึงแยกตามเมนูแต่ละครั้ง');
+            // console.log('=== Login Debug Info ===');
+            // console.log('Username:', user.username);
+            // console.log('Branch ID:', user.branch_id);
+            // console.log('Group ID:', user.group_id);
+            // console.log('Note: access_level จะดึงแยกตามเมนูแต่ละครั้ง');
 
             res.json({ 
                 success: true, 

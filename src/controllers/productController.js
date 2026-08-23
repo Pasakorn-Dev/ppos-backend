@@ -71,11 +71,11 @@ const productController = {
       }
 
       // Debug log
-      console.log('=== saveProductBranchPrices Debug ===');
-      console.log('Product ID:', id);
-      console.log('Access Level from permission middleware:', accessLevel);
-      console.log('User Branch ID:', userBranchId);
-      console.log('Saving prices for branches:', prices.map(p => p.branch_id));
+      // console.log('=== saveProductBranchPrices Debug ===');
+      // console.log('Product ID:', id);
+      // console.log('Access Level from permission middleware:', accessLevel);
+      // console.log('User Branch ID:', userBranchId);
+      // console.log('Saving prices for branches:', prices.map(p => p.branch_id));
 
       // ตรวจสอบสิทธิ์ access_level สำหรับการบันทึกราคาสาขา
       if (accessLevel === 2 || accessLevel === 3) {
