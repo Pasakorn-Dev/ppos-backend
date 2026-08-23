@@ -78,25 +78,22 @@ const productController = {
       console.log('Saving prices for branches:', prices.map(p => p.branch_id));
 
       // ตรวจสอบสิทธิ์ access_level สำหรับการบันทึกราคาสาขา
-      if (accessLevel === 3) {
-        // Level 3: Staff - อนุญาตให้แก้ไขเฉพาะสาขาของตัวเองเท่านั้น
-        for (const price of prices) {
-          if (Number(price.branch_id) !== userBranchId) {
-            return res.status(403).json({ 
-              success: false, 
-              message: 'ปฏิเสธการเข้าถึง: คุณสามารถแก้ไขราคาเฉพาะสาขาของตัวเองได้เท่านั้น' 
-            });
-          }
-        }
-      } else if (accessLevel === 2) {
-        // Level 2: Manager - ตรวจสอบว่ามีสิทธิ์เข้าถึงสาขาเหล่านั้นหรือไม่
+      if (accessLevel === 2 || accessLevel === 3) {
         const db = require('../config/db');
+        // ดึงสิทธิ์สาขาที่มีการแมปในฐานข้อมูลสำหรับผู้ใช้นี้
+        const userBranchesRes = await db.query(
+          'SELECT branch_id FROM user_branches WHERE user_id = $1',
+          [userId]
+        );
+        let allowedBranchIds = userBranchesRes.rows.map(r => Number(r.branch_id));
+        
+        // หากไม่มีการแมปในตาราง user_branches ให้ยึดจากสาขาหลักของผู้ใช้ (branch_id ใน users)
+        if (allowedBranchIds.length === 0 && userBranchId) {
+          allowedBranchIds = [Number(userBranchId)];
+        }
+
         for (const price of prices) {
-          const checkRes = await db.query(
-            'SELECT * FROM user_branches WHERE user_id = $1 AND branch_id = $2',
-            [userId, price.branch_id]
-          );
-          if (checkRes.rows.length === 0) {
+          if (!allowedBranchIds.includes(Number(price.branch_id))) {
             return res.status(403).json({ 
               success: false, 
               message: `ปฏิเสธการเข้าถึง: คุณไม่มีสิทธิ์แก้ไขราคาสาขา ${price.branch_id}` 

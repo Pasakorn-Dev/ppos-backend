@@ -18,7 +18,7 @@ const checkPermission = (menuLink, action) => {
 
             // 2. เช็คสิทธิ์จากตาราง group_permissions โดยอ้างอิงจาก link ของเมนู (ดึง access_level ตามเมนู)
             const permRes = await db.query(`
-                SELECT gp.can_add, gp.can_edit, gp.can_delete, gp.access_level
+                SELECT gp.can_view, gp.can_add, gp.can_edit, gp.can_delete, gp.access_level
                 FROM public.group_permissions gp
                 JOIN public.menus m ON gp.menu_id = m.id
                 WHERE gp.group_id = $1 AND m.link = $2
@@ -29,6 +29,7 @@ const checkPermission = (menuLink, action) => {
 
             // 3. ตรวจสอบตาม action ที่ส่งมา
             let hasAccess = false;
+            if (action === 'view') hasAccess = perm.can_view;
             if (action === 'add') hasAccess = perm.can_add;
             if (action === 'edit') hasAccess = perm.can_edit;
             if (action === 'delete') hasAccess = perm.can_delete;

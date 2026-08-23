@@ -13,7 +13,7 @@ router.put('/:id', checkPermission('/products', 'edit'), productController.updat
 router.delete('/:id', checkPermission('/products', 'delete'), productController.deleteProduct);
 
 // API ราคาสาขา - ตรวจสอบสิทธิ์ด้วย
-router.get('/:id/branch-prices', productController.getProductBranchPrices);
+router.get('/:id/branch-prices', checkPermission('/products', 'view'), productController.getProductBranchPrices);
 router.post('/:id/branch-prices', checkPermission('/products', 'edit'), productController.saveProductBranchPrices);
 
 module.exports = router;

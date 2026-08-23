@@ -116,38 +116,46 @@ const productModel = {
                ON b.id = pbp.branch_id AND pbp.product_id = $1
         ORDER BY b.id ASC
       `;
-    } else if (accessLevel === 2) {
-      // Level 2: Manager เห็นเฉพาะสาขาที่ได้รับสิทธิ์ใน user_branches
-      params.push(userId);
-      query = `
-        SELECT 
-          b.id AS branch_id, 
-          b.branch_name AS branch_name, 
-          pbp.price, 
-          COALESCE(pbp.reorder_point, 0) AS reorder_point, 
-          COALESCE(pbp.is_active, true) AS is_active
-        FROM branches b
-        INNER JOIN user_branches ub ON b.id = ub.branch_id AND ub.user_id = $2
-        LEFT JOIN product_branch_prices pbp 
-               ON b.id = pbp.branch_id AND pbp.product_id = $1
-        ORDER BY b.id ASC
-      `;
     } else {
-      // Level 3: Staff เห็นเฉพาะสาขาของตัวเอง
-      params.push(branchId);
-      query = `
-        SELECT 
-          b.id AS branch_id, 
-          b.branch_name AS branch_name, 
-          pbp.price, 
-          COALESCE(pbp.reorder_point, 0) AS reorder_point, 
-          COALESCE(pbp.is_active, true) AS is_active
-        FROM branches b
-        LEFT JOIN product_branch_prices pbp 
-               ON b.id = pbp.branch_id AND pbp.product_id = $1
-        WHERE b.id = $2
-        ORDER BY b.id ASC
-      `;
+      // ตรวจสอบก่อนว่าผู้ใช้งานมีการแมปสาขาไว้ในตาราง user_branches หรือไม่
+      const checkRes = await pool.query(
+        'SELECT 1 FROM user_branches WHERE user_id = $1 LIMIT 1',
+        [userId]
+      );
+
+      if (checkRes.rows.length > 0) {
+        // กรณีมีการกำหนดสิทธิ์หลายสาขาในตาราง user_branches
+        params.push(userId);
+        query = `
+          SELECT 
+            b.id AS branch_id, 
+            b.branch_name AS branch_name, 
+            pbp.price, 
+            COALESCE(pbp.reorder_point, 0) AS reorder_point, 
+            COALESCE(pbp.is_active, true) AS is_active
+          FROM branches b
+          INNER JOIN user_branches ub ON b.id = ub.branch_id AND ub.user_id = $2
+          LEFT JOIN product_branch_prices pbp 
+                 ON b.id = pbp.branch_id AND pbp.product_id = $1
+          ORDER BY b.id ASC
+        `;
+      } else {
+        // กรณีไม่มีข้อมูลใน user_branches ให้ดึงเฉพาะสาขาหลักของผู้ใช้ (branch_id ในตาราง users)
+        params.push(branchId);
+        query = `
+          SELECT 
+            b.id AS branch_id, 
+            b.branch_name AS branch_name, 
+            pbp.price, 
+            COALESCE(pbp.reorder_point, 0) AS reorder_point, 
+            COALESCE(pbp.is_active, true) AS is_active
+          FROM branches b
+          LEFT JOIN product_branch_prices pbp 
+                 ON b.id = pbp.branch_id AND pbp.product_id = $1
+          WHERE b.id = $2
+          ORDER BY b.id ASC
+        `;
+      }
     }
 
     const { rows } = await pool.query(query, params);
